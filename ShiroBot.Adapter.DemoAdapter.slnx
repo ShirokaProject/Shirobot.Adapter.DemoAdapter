@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="ShiroBot.Adapter.DemoAdapter.csproj" />
+  <Project Path="tests/ShiroBot.Adapter.DemoAdapter.Tests/ShiroBot.Adapter.DemoAdapter.Tests.csproj" />
+</Solution>

@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <ShiroBotPluginPackagingEnabled>true</ShiroBotPluginPackagingEnabled>
+    <UseLocalShiroBotSdk Condition="'$(UseLocalShiroBotSdk)' == '' and Exists('../ShiroBot/ShiroBot.SDK/ShiroBot.SDK.csproj')">true</UseLocalShiroBotSdk>
+    <UseLocalShiroBotSdk Condition="'$(UseLocalShiroBotSdk)' == ''">false</UseLocalShiroBotSdk>
+    <ShiroBotSdkVersion Condition="'$(ShiroBotSdkVersion)' == ''">0.7.0-rc3</ShiroBotSdkVersion>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(UseLocalShiroBotSdk)' == 'true'">
+    <ProjectReference Include="../ShiroBot/ShiroBot.SDK/ShiroBot.SDK.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(UseLocalShiroBotSdk)' != 'true'">
+    <PackageReference Include="ShiroBot.SDK" Version="$(ShiroBotSdkVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="tests/**/*.cs" />
+    <EmbeddedResource Remove="tests/**/*" />
+    <None Remove="tests/**/*" />
+  </ItemGroup>
+
+</Project>
