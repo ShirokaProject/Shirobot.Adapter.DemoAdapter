@@ -1,6 +1,6 @@
 # ShiroBot DemoAdapter
 
-这是一个面向 `ShiroBot.SDK 0.7.0` 的完整示例适配器。它显式列出当前 SDK 的全部 service 方法，并通过统一事件流演示事件发布。
+这是一个面向 `ShiroBot.SDK 0.7.1` 的完整示例适配器。它显式列出当前 SDK 的全部 service 方法，并通过统一事件流演示事件发布。
 
 ## 项目结构
 
@@ -18,13 +18,13 @@
 
 ## 适配器元数据
 
-SDK 0.7.0 使用 `BotAdapterAttribute` 声明适配器元数据：
+SDK 0.7.1 使用 `BotAdapterAttribute` 声明适配器元数据：
 
 ```csharp
 [BotAdapter(
     "DemoAdapter",
     Name = "ShiroBot 示例适配器",
-    Version = "0.7.0",
+    Version = "0.7.1",
     Description = "展示 ShiroBot SDK 适配器接口、配置加载与事件发布的完整模板。",
     Author = "ShiroBot")]
 ```
@@ -55,39 +55,21 @@ ShiroBot 适配器与宿主必须使用匹配的 SDK 版本：
 
 `ServiceContractTests` 不依赖接口成员是否有默认实现。升级 SDK 后，只要接口新增了方法或事件，而模板 service 尚未显式声明，反射测试就会失败并列出遗漏成员。这补足了编译器在 default interface implementation 场景下不会报错的问题。
 
-## SDK 引用策略
+## SDK 依赖
 
-正式依赖始终是：
+项目始终通过 NuGet 使用正式 SDK：
 
 ```xml
-<PackageReference Include="ShiroBot.SDK" Version="0.7.0" />
+<PackageReference Include="ShiroBot.SDK" Version="0.7.1" />
 ```
-
-在此仓库与 ShiroBot 主仓库并排开发，且 `../ShiroBot/ShiroBot.SDK/ShiroBot.SDK.csproj` 存在时，项目默认临时切换到相对路径 `ProjectReference`，以便在预发布包尚未发布时进行本地构建。
-
-CI、tag release 和正式发布必须传入：
-
-```bash
--p:UseLocalShiroBotSdk=false
-```
-
-这样构建会使用 `ShiroBot.SDK 0.7.0` 的 `PackageReference`，不会把主仓库项目引用带入发布产物。
 
 ## 本地构建和测试
 
-在与 ShiroBot 主仓库并排的当前目录中运行：
+在当前目录中运行：
 
 ```bash
 dotnet build ShiroBot.Adapter.DemoAdapter.slnx
 dotnet test ShiroBot.Adapter.DemoAdapter.slnx
-```
-
-0.7.0 发布后，也可以显式验证 NuGet 包构建：
-
-```bash
-dotnet restore ShiroBot.Adapter.DemoAdapter.slnx -p:UseLocalShiroBotSdk=false
-dotnet build ShiroBot.Adapter.DemoAdapter.slnx -c Release --no-restore -p:UseLocalShiroBotSdk=false
-dotnet test ShiroBot.Adapter.DemoAdapter.slnx -c Release --no-build --no-restore -p:UseLocalShiroBotSdk=false
 ```
 
 ## GitHub Actions

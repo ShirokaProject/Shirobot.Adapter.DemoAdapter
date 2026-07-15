@@ -9,7 +9,7 @@ namespace ShiroBot.DemoAdapter;
 [BotAdapter(
     "DemoAdapter",
     Name = "ShiroBot 示例适配器",
-    Version = "0.7.0",
+    Version = "0.7.1",
     Description = "展示 ShiroBot SDK 适配器接口、配置加载与事件发布的完整模板。",
     Author = "ShiroBot",
     IsSingleFile = true)]

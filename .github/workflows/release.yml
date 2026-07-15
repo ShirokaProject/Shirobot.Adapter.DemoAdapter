@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
     inputs:
       tag_name:
-        description: "Release tag name, for example v0.7.0"
+        description: "Release tag name, for example v0.7.1"
         required: true
         type: string
 
@@ -22,38 +22,22 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Checkout ShiroBot SDK source
-        uses: actions/checkout@v4
-        with:
-          repository: ShirokaProject/ShiroBot
-          path: shirobot-core
-          ref: master
-
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 10.0.x
 
-      - name: Pack current SDK
-        run: |
-          dotnet pack shirobot-core/ShiroBot.Model/ShiroBot.Model.csproj -c Release -o artifacts/nuget
-          dotnet pack shirobot-core/ShiroBot.SDK/ShiroBot.SDK.csproj -c Release -o artifacts/nuget
-
-      - name: Restore against the current SDK package
-        run: >-
-          dotnet restore ShiroBot.Adapter.DemoAdapter.slnx
-          -p:UseLocalShiroBotSdk=false
-          --source artifacts/nuget
-          --source https://api.nuget.org/v3/index.json
+      - name: Restore NuGet packages
+        run: dotnet restore ShiroBot.Adapter.DemoAdapter.slnx
 
       - name: Build
-        run: dotnet build ShiroBot.Adapter.DemoAdapter.slnx --configuration Release --no-restore -p:UseLocalShiroBotSdk=false
+        run: dotnet build ShiroBot.Adapter.DemoAdapter.slnx --configuration Release --no-restore
 
       - name: Test service contracts
-        run: dotnet test ShiroBot.Adapter.DemoAdapter.slnx --configuration Release --no-build --no-restore -p:UseLocalShiroBotSdk=false
+        run: dotnet test ShiroBot.Adapter.DemoAdapter.slnx --configuration Release --no-build --no-restore
 
       - name: Publish adapter
-        run: dotnet publish ShiroBot.Adapter.DemoAdapter.csproj --configuration Release --no-restore --output artifacts/publish -p:UseLocalShiroBotSdk=false
+        run: dotnet publish ShiroBot.Adapter.DemoAdapter.csproj --configuration Release --no-restore --output artifacts/publish
 
       - name: Collect release files
         shell: bash
