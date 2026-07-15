@@ -1,6 +1,6 @@
 # ShiroBot DemoAdapter
 
-这是一个面向 `ShiroBot.SDK 0.7.0-rc3` 的完整示例适配器。它显式列出当前 SDK 的全部 service 方法和事件，便于开发者直接逐项替换为目标平台实现，也便于 SDK 升级时发现接口差异。
+这是一个面向 `ShiroBot.SDK 0.7.0` 的完整示例适配器。它显式列出当前 SDK 的全部 service 方法，并通过统一事件流演示事件发布。
 
 ## 项目结构
 
@@ -11,7 +11,7 @@
 - `Services/GroupService.cs`：当前 `IGroupService` 的全部方法。
 - `Services/MessageService.cs`：当前 `IMessageService` 的全部方法。
 - `Services/SystemService.cs`：当前 `ISystemService` 的全部方法。
-- `Services/EventService.cs`：当前 `IEventService` 的全部事件及演示事件发布入口。
+- `Services/EventService.cs`：统一 `EventReceived(Event)` 事件流及演示事件发布入口。
 - `tests/`：通过反射检查每个模板 service 是否显式声明当前接口的全部成员。
 
 除演示事件发布外，所有尚未接入目标平台的方法都会明确抛出 `NotSupportedException`。实现真实适配器时，可以保留方法签名并直接替换方法体。
@@ -29,7 +29,7 @@ SDK 0.7.0 使用 `BotAdapterAttribute` 声明适配器元数据：
     Author = "ShiroBot")]
 ```
 
-示例没有声明 `IBotAdapter.Metadata`。从 SDK 0.7.0 开始，该成员应由 SDK 提供默认兼容实现，并从适配器特性读取元数据。
+`BotAdapterAttribute` 是唯一 metadata 来源；`IBotAdapter.Name` 和 `IBotAdapter.Metadata` 已移除。
 
 ## 配置和启动行为
 
@@ -42,17 +42,16 @@ SDK 0.7.0 使用 `BotAdapterAttribute` 声明适配器元数据：
 | `DemoEventSelfId` | `10000` | 演示事件中的机器人 ID。 |
 | `DemoEventUserId` | `10001` | 演示事件中的好友 ID。 |
 
-启用后，适配器会周期性通过 `EventService.FriendNudge` 发布 `FriendNudgeEvent`。真实适配器应删除或替换该循环，从 WebSocket、SSE、Webhook 或平台 SDK 接收事件，再触发对应事件。
+启用后，适配器会周期性通过 `EventService.EventReceived` 发布 `FriendNudgeEvent`。真实适配器应删除或替换该循环，从 WebSocket、SSE、Webhook 或平台 SDK 接收事件，再发布统一模型事件。
 
 ## SDK 接口兼容规则
 
-ShiroBot SDK 对已发布 adapter 的接口演进必须遵循以下规则：
+ShiroBot 适配器与宿主必须使用匹配的 SDK 版本：
 
-- SDK 向 `IFileService`、`IFriendService`、`IGroupService`、`IMessageService` 或 `ISystemService` 新增方法时，必须提供 default interface implementation，通常默认抛出 `NotSupportedException`。
-- SDK 向 `IEventService` 新增事件时，也必须提供 default interface implementation；事件的默认 `add`/`remove` 访问器可以为空实现。
-- SDK 向 `IBotAdapter` 新增成员时，同样必须提供兼容默认实现，或者通过不破坏既有实现类的其他机制演进。
-- 如果新增接口成员没有默认实现，使用旧版 SDK 编译的 adapter 将不再满足新接口契约，宿主可能在加载或调用时失败；仅提高包版本不能保证二进制兼容。
-- 默认实现用于保证旧 adapter 继续加载，不代表新 adapter 应忽略新能力。此模板故意显式实现当前全部成员，让代码审查可以直接看到支持范围。
+- `IEventService` 只有一个 `EventReceived(Event)` 入口，协议新增事件无需扩展接口。
+- `BotAdapterAttribute` 必须存在，旧 metadata fallback 不再支持。
+- `StartAsync()` 和 `StopAsync()` 默认 no-op；需要连接、后台任务或清理资源时再显式实现。
+- 适配器 ABI 可以 breaking；插件 API 和 Model 构造器 ABI 仍保持兼容。
 
 `ServiceContractTests` 不依赖接口成员是否有默认实现。升级 SDK 后，只要接口新增了方法或事件，而模板 service 尚未显式声明，反射测试就会失败并列出遗漏成员。这补足了编译器在 default interface implementation 场景下不会报错的问题。
 
@@ -61,7 +60,7 @@ ShiroBot SDK 对已发布 adapter 的接口演进必须遵循以下规则：
 正式依赖始终是：
 
 ```xml
-<PackageReference Include="ShiroBot.SDK" Version="0.7.0-rc3" />
+<PackageReference Include="ShiroBot.SDK" Version="0.7.0" />
 ```
 
 在此仓库与 ShiroBot 主仓库并排开发，且 `../ShiroBot/ShiroBot.SDK/ShiroBot.SDK.csproj` 存在时，项目默认临时切换到相对路径 `ProjectReference`，以便在预发布包尚未发布时进行本地构建。
@@ -72,7 +71,7 @@ CI、tag release 和正式发布必须传入：
 -p:UseLocalShiroBotSdk=false
 ```
 
-这样构建会使用 `ShiroBot.SDK 0.7.0-rc3` 的 `PackageReference`，不会把主仓库项目引用带入发布产物。
+这样构建会使用 `ShiroBot.SDK 0.7.0` 的 `PackageReference`，不会把主仓库项目引用带入发布产物。
 
 ## 本地构建和测试
 

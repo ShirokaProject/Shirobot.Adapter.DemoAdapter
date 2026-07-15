@@ -1,5 +1,6 @@
 using System.Reflection;
 using ShiroBot.DemoAdapter.Services;
+using ShiroBot.Model.Common;
 using ShiroBot.SDK.Adapter;
 using Xunit;
 
@@ -42,6 +43,23 @@ public sealed class ServiceContractTests
             $"{implementationType.Name} 未显式覆盖 {contractType.Name} 的成员。" +
             $" Methods: [{string.Join(", ", missingMethods)}];" +
             $" Events: [{string.Join(", ", missingEvents)}]");
+    }
+
+    [Fact]
+    public async Task Event_service_publishes_arbitrary_models_through_unified_stream()
+    {
+        var service = new EventService();
+        var expected = new GroupDisbandEvent(1, 2, 3, 4);
+        Event? received = null;
+        service.EventReceived += evt =>
+        {
+            received = evt;
+            return Task.CompletedTask;
+        };
+
+        await service.PublishAsync(expected);
+
+        Assert.Same(expected, received);
     }
 
     private static MethodInfo? FindDeclaredMethod(Type implementationType, MethodInfo contractMethod)

@@ -19,8 +19,6 @@ public sealed class DemoAdapter : IBotAdapter
     private CancellationTokenSource? _demoEventCancellation;
     private Task? _demoEventTask;
 
-    public string Name => "DemoAdapter";
-
     public IFileService File { get; } = new FileService();
     public IFriendService Friend { get; } = new FriendService();
     public IGroupService Group { get; } = new GroupService();
